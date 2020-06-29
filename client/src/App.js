@@ -138,6 +138,7 @@ const Room = (props) => {
         {socketRef.current ? ['my id: ', socketRef.current.id] : undefined}
       </div>
       <video muted ref={userVideoRef} autoPlay playsInline></video>
+      <hr></hr>
       {peers.map((peer, index) => {
         return <Video key={index} peer={peer}></Video>;
       })}
