@@ -1,7 +1,11 @@
 const functions = require('firebase-functions');
 const mExpress = require('express');
 const mSocket = require('socket.io');
+const { user } = require('firebase-functions/lib/providers/auth');
 const kConst_PORT = process.env.PORT || 5000;
+
+//reference:
+// https://stackoverflow.com/questions/32674391/io-emit-vs-socket-emit/32675498
 
 const server = mExpress()
   .get('/', (request, response) => {
@@ -11,6 +15,8 @@ const server = mExpress()
 const funcInstance = functions.https.onRequest(server);
 const io = mSocket.listen(server);
 const users = {};
+const room = {};
+const socketToRoom = {};
 
 io.on('connection', (socket) => {
   if (!users[socket.id]) {
@@ -20,7 +26,17 @@ io.on('connection', (socket) => {
   socket.emit('yourID', socket.id);
   io.sockets.emit('allUsers', users);
   socket.on('disconnect', () => {
-    delete users[socket.id];
+    //handle disconnect from room
+    const roomID = socketToRoom[socket.id];
+    let usersInRoom = room[roomID];
+    if (usersInRoom) {
+      usersInRoom = usersInRoom.filter((id) => id !== socket.id);
+      room[roomID] = usersInRoom;
+    }
+
+    if (socket.id in users) {
+      delete users[socket.id];
+    }
   });
   socket.on('callUser', (data) => {
     console.log('callUser:', data.userToCall);
@@ -31,6 +47,39 @@ io.on('connection', (socket) => {
   });
   socket.on('acceptCall', (data) => {
     io.to(data.to).emit('callAccepted', data.signal);
+  });
+
+  // ======= room functionality ==========
+  socket.on('join room', (roomID) => {
+    console.log('join room, roomID:', roomID, 'socketID:', socket.id);
+    if (room[roomID]) {
+      const length = room[roomID].length;
+      if (length === 4) {
+        socket.emit('room full');
+        return;
+      }
+      room[roomID].push(socket.id);
+    } else {
+      room[roomID] = [socket.id];
+    }
+    console.log('room users -->', room[roomID]);
+    socketToRoom[socket.id] = roomID;
+    const usersInThisRoom = room[roomID].filter((id) => id !== socket.id);
+    console.log('users in this room -->', usersInThisRoom);
+    socket.emit('all users', usersInThisRoom);
+  });
+  socket.on('sending signal', (payload) => {
+    console.log('forwarding signal to:', payload.userToSignal);
+    io.to(payload.userToSignal).emit('user joined', {
+      signal: payload.signal,
+      callerID: payload.callerID,
+    });
+  });
+  socket.on('returning signal', (payload) => {
+    io.to(payload.callerID).emit('receiving returned signal', {
+      signal: payload.signal,
+      id: socket.id,
+    });
   });
 });
 
