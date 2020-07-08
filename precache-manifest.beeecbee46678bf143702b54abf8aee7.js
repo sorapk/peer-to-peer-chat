@@ -1,10 +1,10 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "7b43d77e160fd36ea432a9db1d189f15",
+    "revision": "c6e119d0629c8b5e13baab3981890939",
     "url": "/peer-to-peer-chat/index.html"
   },
   {
-    "revision": "3cae51f2c94ba9cb96c1",
+    "revision": "32d73cd3991d019476b4",
     "url": "/peer-to-peer-chat/static/css/main.d1b05096.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/peer-to-peer-chat/static/js/2.554f810b.chunk.js.LICENSE.txt"
   },
   {
-    "revision": "3cae51f2c94ba9cb96c1",
-    "url": "/peer-to-peer-chat/static/js/main.cfae2222.chunk.js"
+    "revision": "32d73cd3991d019476b4",
+    "url": "/peer-to-peer-chat/static/js/main.b6ee31a8.chunk.js"
   },
   {
     "revision": "8339fbf480390a410343",
