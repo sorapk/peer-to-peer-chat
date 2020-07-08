@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/peer-to-peer-chat/static/css/main.d1b05096.chunk.css",
-    "main.js": "/peer-to-peer-chat/static/js/main.5dc4a334.chunk.js",
-    "main.js.map": "/peer-to-peer-chat/static/js/main.5dc4a334.chunk.js.map",
+    "main.js": "/peer-to-peer-chat/static/js/main.9feb76d5.chunk.js",
+    "main.js.map": "/peer-to-peer-chat/static/js/main.9feb76d5.chunk.js.map",
     "runtime-main.js": "/peer-to-peer-chat/static/js/runtime-main.07ca7449.js",
     "runtime-main.js.map": "/peer-to-peer-chat/static/js/runtime-main.07ca7449.js.map",
     "static/js/2.fcfd3ed0.chunk.js": "/peer-to-peer-chat/static/js/2.fcfd3ed0.chunk.js",
     "static/js/2.fcfd3ed0.chunk.js.map": "/peer-to-peer-chat/static/js/2.fcfd3ed0.chunk.js.map",
     "index.html": "/peer-to-peer-chat/index.html",
-    "precache-manifest.01fbcdf6cbbfbe80499fa1741d5b9ea1.js": "/peer-to-peer-chat/precache-manifest.01fbcdf6cbbfbe80499fa1741d5b9ea1.js",
+    "precache-manifest.4a66a6605d6d3f64f4d344f00a2ef442.js": "/peer-to-peer-chat/precache-manifest.4a66a6605d6d3f64f4d344f00a2ef442.js",
     "service-worker.js": "/peer-to-peer-chat/service-worker.js",
     "static/css/main.d1b05096.chunk.css.map": "/peer-to-peer-chat/static/css/main.d1b05096.chunk.css.map",
     "static/js/2.fcfd3ed0.chunk.js.LICENSE.txt": "/peer-to-peer-chat/static/js/2.fcfd3ed0.chunk.js.LICENSE.txt"
@@ -17,6 +17,6 @@
     "static/js/runtime-main.07ca7449.js",
     "static/js/2.fcfd3ed0.chunk.js",
     "static/css/main.d1b05096.chunk.css",
-    "static/js/main.5dc4a334.chunk.js"
+    "static/js/main.9feb76d5.chunk.js"
   ]
 }
