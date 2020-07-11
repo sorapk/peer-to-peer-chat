@@ -7,7 +7,8 @@ import { BrowserRouter, HashRouter } from 'react-router-dom';
 
 const firebase = { firestore, auth, initializeApp };
 const UserDB = async () => {
-  const firebaseConfig = JSON.parse(process.env.REACT_APP_PEER_FIREBASE);
+  const str = process.env.REACT_APP_PEER_FIREBASE.slice(1, -1);
+  const firebaseConfig = JSON.parse(str);
 
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
