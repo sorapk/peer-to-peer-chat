@@ -237,6 +237,11 @@ const UserDB = async () => {
         if (doc.exists) {
           let { calleePayload, calleeMsgCnt, calleeMsgInd } = doc.data();
 
+          // get byte count of payload/data
+          const increment = firebase.firestore.FieldValue.increment(
+            new TextEncoder().encode(JSON.stringify(data)).length
+          );
+
           calleePayload[calleeMsgCnt] = data;
           calleeMsgCnt++;
 
@@ -245,6 +250,7 @@ const UserDB = async () => {
             calleePayload,
             calleeMsgDiff: calleeMsgCnt - calleeMsgInd,
             lastUpdated: firebase.firestore.Timestamp.now().toDate(),
+            payloadByteUsed: increment,
           });
         }
       });
@@ -263,6 +269,11 @@ const UserDB = async () => {
         if (doc.exists) {
           let { callerPayload, callerMsgCnt, callerMsgInd } = doc.data();
 
+          // get byte count of payload/data
+          const increment = firebase.firestore.FieldValue.increment(
+            new TextEncoder().encode(JSON.stringify(data)).length
+          );
+
           callerPayload[callerMsgCnt] = data;
           callerMsgCnt++;
 
@@ -271,6 +282,7 @@ const UserDB = async () => {
             callerPayload,
             callerMsgDiff: callerMsgCnt - callerMsgInd,
             lastUpdated: firebase.firestore.Timestamp.now().toDate(),
+            payloadByteUsed: increment,
           });
         }
       });
@@ -328,6 +340,7 @@ const UserDB = async () => {
               calleeMsgDiff: 0,
               calleePayload: {},
               // ==============
+              payloadByteUsed: 0,
               lastUpdated: firebase.firestore.Timestamp.now().toDate(),
             });
           }
