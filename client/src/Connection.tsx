@@ -1,5 +1,4 @@
 import { firestore, auth, initializeApp } from 'firebase';
-import { error } from 'console';
 
 const firebase = { firestore, auth, initializeApp };
 
@@ -35,7 +34,7 @@ type ConnectionInfo = {
 
 export const Connection = async () => {
   if (process.env.REACT_APP_PEER_FIREBASE === undefined) {
-    throw error('Firebase API Key Not Defined');
+    throw 'Firebase API Key Not Defined';
   }
 
   const str = process.env.REACT_APP_PEER_FIREBASE.slice(1, -1);
