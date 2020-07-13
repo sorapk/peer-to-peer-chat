@@ -2,8 +2,8 @@ import { firestore, auth, initializeApp } from 'firebase';
 
 const firebase = { firestore, auth, initializeApp };
 
-const CALLER_MSG_INITIATE = 'initiate';
-const CALLEE_MSG_ACCEPT = 'callee-accept';
+export const CALLER_MSG_INITIATE = 'initiate';
+export const CALLEE_MSG_ACCEPT = 'callee-accept';
 
 type NumberDict = {
   [key: number]: any;

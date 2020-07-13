@@ -4,12 +4,11 @@ import './App.css';
 import { firestore, auth, initializeApp } from 'firebase';
 import Peer from 'simple-peer';
 import { BrowserRouter, HashRouter } from 'react-router-dom';
-import { Connection } from './Connection.tsx';
-const firebase = { firestore, auth, initializeApp };
-
-const CALLER_MSG_INITIATE = 'initiate';
-
-const CALLEE_MSG_ACCEPT = 'callee-accept';
+import {
+  Connection,
+  CALLER_MSG_INITIATE,
+  CALLEE_MSG_ACCEPT,
+} from './Connection.tsx';
 
 const PEER_STATE_0 = 'not-connected';
 const PEER_STATE_1 = 'initiated';
