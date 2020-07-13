@@ -112,7 +112,7 @@ export class PeerInfo {
       this.state = PeerState.PEER_STATE_1;
       // callee accepted, create and send offer to be sent
       console.log('callee accepted call:', calleeID);
-      this.__initPeer(myStream, 'non-initiator', onSignal, onEvent);
+      this.__initPeer(myStream, 'initiator', onSignal, onEvent);
     } else if (
       this.state === PeerState.PEER_STATE_1 ||
       this.state === PeerState.PEER_STATE_2 ||
