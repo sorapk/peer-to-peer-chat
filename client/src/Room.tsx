@@ -5,16 +5,10 @@ import {
   CALLEE_MSG_ACCEPT,
   CALLER_MSG_INITIATE,
 } from './Connection';
-import Peer from 'simple-peer';
 import SimplePeer from 'simple-peer';
 
-enum PeerState {
-  PEER_STATE_0 = 'not-connected',
-  PEER_STATE_1 = 'initiated',
-  PEER_STATE_2 = 'connecting',
-  PEER_STATE_3 = 'connected',
-  PEER_STATE_4 = 'failed',
-}
+import { PeerInfo } from './PeerInfo';
+
 type FixLater = any;
 
 const Video = (props: { peer: SimplePeer.Instance | null }) => {
@@ -37,33 +31,9 @@ const Video = (props: { peer: SimplePeer.Instance | null }) => {
     </div>
   );
 };
-
-class PeerInfo {
-  id: string;
-  state: PeerState;
-  peer: SimplePeer.Instance | null;
-
-  constructor(id: string) {
-    this.id = id;
-    this.state = PeerState.PEER_STATE_0;
-    this.peer = null;
-  }
-  peerProcessSignal(signal: SimplePeer.SignalData) {
-    if (this.peer) {
-      this.peer.signal(signal);
-    }
-  }
-  peerCleanUp() {
-    if (this.peer) {
-      this.peer.destroy();
-      this.peer = null;
-    }
-  }
-}
 interface Props extends RouteComponentProps<{ id: string }> {
   connection: Connection;
 }
-
 interface UserInRoom {
   [key: string]: PeerInfo;
 }
@@ -90,27 +60,6 @@ export const Room = withRouter(({ ...props }: Props) => {
       .getUserMedia({ video: videoConstraints, audio: false })
       .then(gotMedia);
   }, []);
-
-  const onPeerConnect = (peerInfo: PeerInfo | undefined) => {
-    if (peerInfo === undefined) return;
-    console.log('connection establised:', peerInfo.id);
-    peerInfo.state = PeerState.PEER_STATE_3;
-    setUserInRoomState({});
-  };
-  const onPeerDisconnect = (peerInfo: PeerInfo | undefined) => {
-    if (peerInfo === undefined) return;
-    peerInfo.state = PeerState.PEER_STATE_0;
-    console.log('connection closed:', peerInfo.id);
-    peerInfo.peerCleanUp();
-    setUserInRoomState({});
-  };
-  const onPeerError = (peerInfo: PeerInfo | undefined, err: any) => {
-    if (peerInfo === undefined) return;
-    console.log('connection error:', peerInfo.id, err);
-    peerInfo.state = PeerState.PEER_STATE_4;
-    peerInfo.peerCleanUp();
-    setUserInRoomState({});
-  };
 
   const gotMedia = async (stream: MediaStream) => {
     if (userVideoRef === undefined || userVideoRef.current === undefined) {
@@ -150,52 +99,25 @@ export const Room = withRouter(({ ...props }: Props) => {
           if (userInRoomRef.current[from] === undefined) {
             userInRoomRef.current[from] = new PeerInfo(from);
           }
+
           const currentPeerInfo = userInRoomRef.current[from];
 
-          if (
-            currentPeerInfo.state === PeerState.PEER_STATE_0 &&
-            msg === CALLER_MSG_INITIATE
-          ) {
-            currentPeerInfo.state = PeerState.PEER_STATE_1;
-
-            // initiate call
-            console.log('initiation recieved from:', from);
+          if (msg === CALLER_MSG_INITIATE) {
             await connection.sendCallerAResponse(CALLEE_MSG_ACCEPT, from);
-          } else if (currentPeerInfo.state === PeerState.PEER_STATE_1) {
-            currentPeerInfo.state = PeerState.PEER_STATE_2;
-
-            // process offer
-            console.log('recieved offer recieved from:', from);
-            console.log('offer:', msg);
-            currentPeerInfo.peer = addPeer(msg, from, stream, (signal: any) => {
-              connection.sendCallerAResponse(signal, from);
-            });
-            //listen to peer events
-            currentPeerInfo.peer.on('connect', () => {
-              onPeerConnect(userInRoomRef.current[from]);
-            });
-            currentPeerInfo.peer.on('close', () => {
-              onPeerDisconnect(userInRoomRef.current[from]);
-            });
-            currentPeerInfo.peer.on('error', (err: any) => {
-              onPeerError(userInRoomRef.current[from], err);
-            });
-
-            // process offer
-            currentPeerInfo.peer.signal(msg);
-          } else if (
-            currentPeerInfo.state === PeerState.PEER_STATE_2 ||
-            currentPeerInfo.state === PeerState.PEER_STATE_3
-          ) {
-            // process ICE
-            console.log('recieved ICE recieved from:', from);
-            console.log('ICE:', msg);
-            currentPeerInfo.peerProcessSignal(msg);
-          } else {
-            // bad state, clean up
-            currentPeerInfo.state = PeerState.PEER_STATE_4;
-            currentPeerInfo.peerCleanUp();
           }
+          currentPeerInfo.processCallerPayload(
+            stream,
+            from,
+            msg,
+            (signal) => {
+              //TODO: compress signal data here
+              connection.sendCallerAResponse(signal, from);
+            },
+            (event) => {
+              //Update View when PeerToPeer Connection state cahges
+              setUserInRoomState({});
+            }
+          );
         }
         setUserInRoomState({});
       }
@@ -217,55 +139,23 @@ export const Room = withRouter(({ ...props }: Props) => {
             userInRoomRef.current[to] = new PeerInfo(to);
           }
           const currentPeerInfo = userInRoomRef.current[to];
-          if (
-            //callee accepted
-            currentPeerInfo.state === PeerState.PEER_STATE_0 &&
-            msg === CALLEE_MSG_ACCEPT
-          ) {
-            currentPeerInfo.state = PeerState.PEER_STATE_1;
 
-            // callee accepted, create and send offer to be sent
-            console.log('callee accepted call:', to);
-
-            currentPeerInfo.peer = createPeer(to, stream, (signal: any) => {
+          currentPeerInfo.processCalleePayload(
+            stream,
+            to,
+            msg,
+            (signal) => {
               connection.sendCalleeAResponse(signal, to);
-            });
-            //listen to peer events
-            currentPeerInfo.peer.on('connect', () => {
-              onPeerConnect(userInRoomRef.current[to]);
-            });
-            currentPeerInfo.peer.on('close', () => {
-              onPeerDisconnect(userInRoomRef.current[to]);
-            });
-            currentPeerInfo.peer.on('error', (err: any) => {
-              onPeerError(userInRoomRef.current[to], err);
-            });
-          } else if (
-            currentPeerInfo.state === PeerState.PEER_STATE_1 ||
-            currentPeerInfo.state === PeerState.PEER_STATE_2 ||
-            currentPeerInfo.state === PeerState.PEER_STATE_3
-          ) {
-            //process callee accepted and ICE candidate
-            if (currentPeerInfo.state === PeerState.PEER_STATE_1) {
-              currentPeerInfo.state = PeerState.PEER_STATE_2;
+            },
+            (event) => {
+              //Update View when PeerToPeer Connection state cahges
+              setUserInRoomState({});
             }
-
-            // process offer
-            console.log('recieved answer/ICE recieved from callee:', to);
-            console.log('callee data:', msg);
-
-            // process offer
-            currentPeerInfo.peerProcessSignal(msg);
-          } else {
-            // bad state, clean up
-            currentPeerInfo.state = PeerState.PEER_STATE_4;
-            currentPeerInfo.peerCleanUp();
-          }
+          );
         }
         setUserInRoomState({});
       }
     );
-
     //3. call existing peers in room
     callPeerInRoom(stream, roomInfo);
   };
@@ -291,42 +181,6 @@ export const Room = withRouter(({ ...props }: Props) => {
   const callPeer = (peerID: string, stream: any, roomID: string) => {
     connection.initiateConnection(roomID, 'initiate-connection', peerID);
   };
-  const createPeer = (
-    userToSignal: any,
-    stream: MediaStream,
-    onSignal: { (signal: any): void; (arg0: any): void }
-  ) => {
-    const peer = new Peer({
-      initiator: true,
-      trickle: false,
-      stream: stream,
-    });
-    console.log('peer created -->', peer);
-    peer.on('signal', (signal: any) => {
-      console.log('signal created for:', userToSignal, signal);
-      onSignal(signal);
-    });
-
-    return peer;
-  };
-  const addPeer = (
-    incomingSignal: any,
-    callerID: any,
-    stream: MediaStream,
-    onSignal: { (signal: any): void; (arg0: any): void }
-  ) => {
-    const peer = new Peer({
-      initiator: false,
-      trickle: false,
-      stream,
-    });
-    peer.on('signal', (signal: any) => {
-      console.log('returning signal created for', callerID, signal);
-      onSignal(signal);
-    });
-    return peer;
-  };
-
   const peerList = [];
   for (const peerid in userInRoomRef.current) {
     if (userInRoomRef.current[peerid].peer) {
