@@ -37,7 +37,8 @@ interface Props extends RouteComponentProps<{ id: string }> {
 interface UserInRoom {
   [key: string]: PeerInfo;
 }
-
+// reference:
+// https://ui.dev/react-router-v4-programmatically-navigate/
 export const Room = withRouter(({ ...props }: Props) => {
   const userVideoRef = useRef<any>();
   const roomID = props.match.params.id;
@@ -65,7 +66,6 @@ export const Room = withRouter(({ ...props }: Props) => {
     if (userVideoRef === undefined || userVideoRef.current === undefined) {
       return;
     }
-
     userVideoRef.current.srcObject = stream;
 
     const roomInfo = await connection.joinRoom(roomID);
@@ -81,8 +81,6 @@ export const Room = withRouter(({ ...props }: Props) => {
         userInRoomRef.current[userID] = new PeerInfo(userID);
       }
     }
-    setUserInRoomState({});
-
     //1. register listener to incoming request to connect
     connection.onCallerMsg(
       roomID,
@@ -158,6 +156,8 @@ export const Room = withRouter(({ ...props }: Props) => {
     );
     //3. call existing peers in room
     callPeerInRoom(stream, roomInfo);
+
+    setUserInRoomState({});
   };
   const callPeerInRoom = (stream: MediaStream, roomInfo: { user: any }) => {
     //3. call each user in the roo
