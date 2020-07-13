@@ -31,7 +31,21 @@ type ConnectionInfo = {
   payloadByteUsed: number;
   lastUpdated: FirebaseTimeStamp;
 };
-
+export type Connection = {
+  userID: () => string;
+  onCallerMsg: (roomID: string, message: string, callback: Function) => void;
+  onCalleeMsg: (roomID: string, message: string, callback: Function) => void;
+  sendCallerAResponse: (data: any, from: string) => Promise<any>;
+  sendCalleeAResponse: (data: any, to: string) => Promise<any>;
+  initiateConnection: (
+    roomID: string,
+    message: string,
+    to: string
+  ) => Promise<any>;
+  joinRoom: (roomID: string) => Promise<any>;
+  createRoom: () => Promise<null | string>;
+  firebaseTimeToTimestamp: (firebaseTimestamp: FirebaseTimeStamp) => number;
+};
 export const Connection = async () => {
   if (process.env.REACT_APP_PEER_FIREBASE === undefined) {
     throw 'Firebase API Key Not Defined';
@@ -191,13 +205,9 @@ export const Connection = async () => {
     });
   };
 
-  return {
+  const connectionInterface: Connection = {
     userID: function () {
       return userRef.id;
-    },
-    userInfo: function () {
-      if (userRef === null) {
-      }
     },
     onCallerMsg: function (
       roomID: string,
@@ -403,17 +413,6 @@ export const Connection = async () => {
             console.log('msg queue data:', user);
             await docRef.update(user);
             const updatedDoc = await docRef.get();
-            // await db.doc(`room/${roomID}`).onSnapshot(async (doc) => {
-            //   const data = doc.data();
-            //   const queue = data.userMsgQueue[userRef.id];
-
-            //   if (queue.length > 0) {
-            //     console.log('consuming data:', queue);
-            //     const blankQueue = { ['userMsgQueue.' + userRef.id]: [] };
-            //     await docRef.update(blankQueue);
-            //   }
-            // });
-
             return updatedDoc.data();
           } else {
             console.log("room doesn't exist:", roomID);
@@ -443,4 +442,6 @@ export const Connection = async () => {
     },
     firebaseTimeToTimestamp: firebaseTimeToTimestamp,
   };
+
+  return connectionInterface;
 };
