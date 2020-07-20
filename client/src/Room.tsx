@@ -42,14 +42,17 @@ interface ControlProps {
   muteAudio: boolean;
   muteVideo: boolean;
   hangup: boolean;
-  showText: boolean;
+  showMessage: boolean;
+  switchCam: boolean;
+}
+interface ControlAction {
   clickMuteAudio: () => void;
   clickMuteVideo: () => void;
   clickHangup: () => void;
-  clickShowText: () => void;
+  clickShowMessage: () => void;
+  clickSwitchCam: () => void;
 }
-
-const Control = (props: FixLater) => {
+const Control = (props: ControlProps & ControlAction) => {
   const [active, setActive] = useState(false);
   const timeoutHandleRef = useRef<number | null>();
 
@@ -76,7 +79,8 @@ const Control = (props: FixLater) => {
       className={'icons hidden' + (active === true ? ' active' : '')}
     >
       <svg
-        className='svg mute-audio off'
+        className={'svg mute-audio ' + (props.muteAudio ? 'on' : 'off')}
+        onClick={props.clickMuteAudio}
         width='48'
         height='48'
         viewBox='-10 -10 68 68'
@@ -99,7 +103,8 @@ const Control = (props: FixLater) => {
         />
       </svg>
       <svg
-        className='svg mute-video'
+        className={'svg mute-video ' + (props.muteVideo ? 'on' : 'off')}
+        onClick={props.clickMuteVideo}
         width='48'
         height='48'
         viewBox='-10 -10 68 68'
@@ -121,7 +126,8 @@ const Control = (props: FixLater) => {
         />
       </svg>
       <svg
-        className='svg message hidden'
+        className={'svg message hidden ' + (props.showMessage ? 'on' : 'off')}
+        onClick={props.clickShowMessage}
         width='48'
         height='48'
         viewBox='-10 -10 68 68'
@@ -149,13 +155,20 @@ const Control = (props: FixLater) => {
         />
       </svg>
       <svg
-        className='svg switch-video hidden'
+        className={
+          'svg switch-video hidden ' + (props.switchCam ? 'on' : 'off')
+        }
+        onClick={props.clickSwitchCam}
         width='48'
         height='48'
         viewBox='-10 -10 68 68'
       >
         <circle className='circle' cx='24' cy='24' r='34'>
-          <title>Switch Camera To Rear</title>
+          <title>
+            {props.switchCam === true
+              ? 'Switch To Front Camera'
+              : 'Switch To Rear Camera'}
+          </title>
         </circle>
         <path
           className='path'
@@ -185,7 +198,8 @@ const Control = (props: FixLater) => {
         />
       </svg>
       <svg
-        className='svg hangup hidden'
+        className={'svg hangup hidden ' + (props.hangup ? 'on' : 'off')}
+        onClick={props.clickHangup}
         width='48'
         height='48'
         viewBox='-10 -10 68 68'
@@ -252,6 +266,38 @@ export const Room = withRouter(({ ...props }: Props) => {
   // ==============
   const userInRoomRef = useRef<UserInRoom>({});
   const [userInRoomState, setUserInRoomState] = useState({});
+
+  // ==== controls ===
+  // muteAudio: boolean;
+  // muteVideo: boolean;
+  // hangup: boolean;
+  // showMessage: boolean;
+  // clickMuteAudio: () => void;
+  // clickMuteVideo: () => void;
+  // clickHangup: () => void;
+  // clickShowMessage: () => void;
+
+  const [muteAudio, setMuteAudio] = useState(false);
+  const [muteVideo, setMuteVideo] = useState(false);
+  const [hangup, setHangup] = useState(false);
+  const [showMessage, setShowMessage] = useState(false);
+  const [switchCam, setSwitchCam] = useState(false);
+
+  const onClickMuteAudio = () => {
+    setMuteAudio(muteAudio === false);
+  };
+  const onClickMuteVideo = () => {
+    setMuteVideo(muteVideo === false);
+  };
+  const onClickHangup = () => {
+    setHangup(hangup === false);
+  };
+  const onClickShowMessage = () => {
+    setShowMessage(showMessage === false);
+  };
+  const onClickSwitchCam = () => {
+    setSwitchCam(switchCam === false);
+  };
 
   useEffect(() => {
     if (connection === undefined) {
@@ -421,7 +467,19 @@ export const Room = withRouter(({ ...props }: Props) => {
       <ul>{stat}</ul>
       <hr></hr>
       {/* ======= Controls =========== */}
-      <Control />
+      <Control
+        muteAudio={muteAudio}
+        muteVideo={muteVideo}
+        hangup={hangup}
+        showMessage={showMessage}
+        switchCam={switchCam}
+        // =================
+        clickHangup={onClickHangup}
+        clickMuteAudio={onClickMuteAudio}
+        clickMuteVideo={onClickMuteVideo}
+        clickShowMessage={onClickShowMessage}
+        clickSwitchCam={onClickSwitchCam}
+      />
       {/* ======== User Video ======= */}
       <video
         muted
