@@ -1,6 +1,6 @@
 .mini-video {
   border: 1px solid gray;
-  bottom: 20px;
+  bottom: 1px;
   left: 20px;
   /* video div is flipped horizontally when active*/
   max-height: 17%;
@@ -128,7 +128,8 @@
   transition: 200ms;
 }
 
-.switch-video:hover {
+.switch-video:hover,
+.switch-video.on {
   background: #407cf7;
 }
 
