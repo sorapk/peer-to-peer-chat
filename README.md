@@ -1,12 +1,13 @@
-## Peer to Peer Video Chat Web App
+## Serverless Signaling Peer to Peer Video Chat Web App
 
 #### Client
 
-Packages:
+Technologies/Packages:
 
 - React
-- WebRTC Adapter
-- Socket.io Client
+- Typescript
+- firebase
+- simple-peer
 
 Do before build:
 
@@ -15,19 +16,4 @@ Do before build:
 Commands:
 
 - npm run start
-
-#### Sever
-
-Packages:
-
-- Node
-- Express
-- Socket.io
-
-Hosting:
-
-- Firebase
-
-Commands:
-
-- npm run serve
+- npm run build
